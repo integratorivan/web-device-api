@@ -1,13 +1,476 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>web-diagnostic</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/index.tsx"></script>
-  </body>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Sensor Test</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                background: #f5f5f5;
+            }
+            .sensor-box {
+                background: white;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 20px;
+                margin: 10px 0;
+            }
+            .sensor-title {
+                font-size: 18px;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+            .data-row {
+                margin: 5px 0;
+                font-family: monospace;
+            }
+            .status {
+                color: #666;
+                font-style: italic;
+            }
+            .working {
+                color: green;
+            }
+            .not-working {
+                color: red;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>🔬 Sensor Test</h1>
+        <p>Тест датчиков устройства</p>
+
+        <div id="motionSensor" class="sensor-box">
+            <div class="sensor-title">Motion Sensor (Акселерометр)</div>
+            <div class="status" id="motionStatus">Проверка поддержки...</div>
+            <div id="motionData"></div>
+            <button id="testMotion" onclick="testMotionSensor()">
+                Тест Motion
+            </button>
+        </div>
+
+        <div id="orientationSensor" class="sensor-box">
+            <div class="sensor-title">Orientation Sensor (Гироскоп)</div>
+            <div class="status" id="orientationStatus">
+                Проверка поддержки...
+            </div>
+            <div id="orientationData"></div>
+            <button id="testOrientation" onclick="testOrientationSensor()">
+                Тест Orientation
+            </button>
+        </div>
+
+        <div id="touchSensor" class="sensor-box">
+            <div class="sensor-title">Touch Sensor (Тач)</div>
+            <div class="status" id="touchStatus">Проверка поддержки...</div>
+            <div id="touchData"></div>
+            <button id="testTouch" onclick="testTouchSensor()">
+                Тест Touch
+            </button>
+        </div>
+
+        <script>
+            // Motion Sensor
+            class MotionSensor {
+                constructor() {
+                    this.data = {
+                        acceleration: { x: 0, y: 0, z: 0 },
+                        rotation: { alpha: 0, beta: 0, gamma: 0 },
+                        motionDetected: false,
+                        isValid: false,
+                    };
+                    this.listeners = [];
+                    this.motionThreshold = 1.0;
+                    this.init();
+                }
+
+                init() {
+                    if (this.isSupported()) {
+                        window.addEventListener(
+                            "devicemotion",
+                            this.handleMotion.bind(this),
+                        );
+                    }
+                }
+
+                handleMotion(event) {
+                    const acceleration = event.acceleration || {
+                        x: 0,
+                        y: 0,
+                        z: 0,
+                    };
+                    const rotationRate = event.rotationRate || {
+                        alpha: 0,
+                        beta: 0,
+                        gamma: 0,
+                    };
+
+                    const totalAcceleration = Math.abs(
+                        (acceleration.x || 0) +
+                            (acceleration.y || 0) +
+                            (acceleration.z || 0),
+                    );
+
+                    this.data = {
+                        acceleration: {
+                            x: parseFloat((acceleration.x || 0).toFixed(2)),
+                            y: parseFloat((acceleration.y || 0).toFixed(2)),
+                            z: parseFloat((acceleration.z || 0).toFixed(2)),
+                        },
+                        rotation: {
+                            alpha: parseFloat(
+                                (rotationRate.alpha || 0).toFixed(2),
+                            ),
+                            beta: parseFloat(
+                                (rotationRate.beta || 0).toFixed(2),
+                            ),
+                            gamma: parseFloat(
+                                (rotationRate.gamma || 0).toFixed(2),
+                            ),
+                        },
+                        motionDetected:
+                            totalAcceleration > this.motionThreshold,
+                        isValid: true,
+                    };
+
+                    this.notifyListeners();
+                }
+
+                notifyListeners() {
+                    this.listeners.forEach((callback) => callback(this.data));
+                }
+
+                subscribe(callback) {
+                    this.listeners.push(callback);
+                }
+
+                isSupported() {
+                    return "DeviceMotionEvent" in window;
+                }
+
+                async test() {
+                    if (!this.isSupported()) return false;
+
+                    return new Promise((resolve) => {
+                        const timeout = setTimeout(() => resolve(false), 3000);
+
+                        const testHandler = (event) => {
+                            if (event.acceleration || event.rotationRate) {
+                                clearTimeout(timeout);
+                                window.removeEventListener(
+                                    "devicemotion",
+                                    testHandler,
+                                );
+                                resolve(true);
+                            }
+                        };
+
+                        window.addEventListener("devicemotion", testHandler);
+                    });
+                }
+            }
+
+            // Orientation Sensor
+            class OrientationSensor {
+                constructor() {
+                    this.data = {
+                        alpha: 0,
+                        beta: 0,
+                        gamma: 0,
+                        isValid: false,
+                    };
+                    this.listeners = [];
+                    this.init();
+                }
+
+                init() {
+                    if (this.isSupported()) {
+                        window.addEventListener(
+                            "deviceorientation",
+                            this.handleOrientation.bind(this),
+                        );
+                    }
+                }
+
+                handleOrientation(event) {
+                    if (
+                        event.alpha !== null &&
+                        event.beta !== null &&
+                        event.gamma !== null
+                    ) {
+                        this.data = {
+                            alpha: parseFloat(event.alpha.toFixed(2)),
+                            beta: parseFloat(event.beta.toFixed(2)),
+                            gamma: parseFloat(event.gamma.toFixed(2)),
+                            isValid: true,
+                        };
+
+                        this.notifyListeners();
+                    }
+                }
+
+                notifyListeners() {
+                    this.listeners.forEach((callback) => callback(this.data));
+                }
+
+                subscribe(callback) {
+                    this.listeners.push(callback);
+                }
+
+                isSupported() {
+                    return "DeviceOrientationEvent" in window;
+                }
+
+                async test() {
+                    if (!this.isSupported()) return false;
+
+                    return new Promise((resolve) => {
+                        const timeout = setTimeout(() => resolve(false), 3000);
+
+                        const testHandler = (event) => {
+                            if (event.alpha !== null) {
+                                clearTimeout(timeout);
+                                window.removeEventListener(
+                                    "deviceorientation",
+                                    testHandler,
+                                );
+                                resolve(true);
+                            }
+                        };
+
+                        window.addEventListener(
+                            "deviceorientation",
+                            testHandler,
+                        );
+                    });
+                }
+            }
+
+            // Touch Sensor
+            class TouchSensor {
+                constructor() {
+                    this.data = {
+                        touchCount: 0,
+                        touches: [],
+                        multiTouchDetected: false,
+                        gestureType: "none",
+                        isValid: false,
+                    };
+                    this.listeners = [];
+                    this.init();
+                }
+
+                init() {
+                    if (this.isSupported()) {
+                        document.addEventListener(
+                            "touchstart",
+                            this.handleTouchStart.bind(this),
+                        );
+                        document.addEventListener(
+                            "touchmove",
+                            this.handleTouchMove.bind(this),
+                        );
+                        document.addEventListener(
+                            "touchend",
+                            this.handleTouchEnd.bind(this),
+                        );
+                    }
+                }
+
+                handleTouchStart(event) {
+                    this.processTouchEvent(event);
+                }
+
+                handleTouchMove(event) {
+                    this.processTouchEvent(event);
+                }
+
+                handleTouchEnd(event) {
+                    this.processTouchEvent(event);
+                    this.data.gestureType =
+                        event.touches.length > 0 ? "single" : "none";
+                }
+
+                processTouchEvent(event) {
+                    const touches = Array.from(event.touches).map((touch) => ({
+                        x: touch.clientX,
+                        y: touch.clientY,
+                        force: touch.force || 0.5,
+                    }));
+
+                    this.data = {
+                        touchCount: event.touches.length,
+                        touches: touches,
+                        multiTouchDetected: touches.length > 1,
+                        gestureType:
+                            touches.length === 1
+                                ? "single"
+                                : this.data.gestureType,
+                        isValid: true,
+                    };
+
+                    this.notifyListeners();
+                }
+
+                notifyListeners() {
+                    this.listeners.forEach((callback) => callback(this.data));
+                }
+
+                subscribe(callback) {
+                    this.listeners.push(callback);
+                }
+
+                isSupported() {
+                    return (
+                        "ontouchstart" in window || navigator.maxTouchPoints > 0
+                    );
+                }
+
+                async test() {
+                    if (!this.isSupported()) return false;
+
+                    return new Promise((resolve) => {
+                        const timeout = setTimeout(() => resolve(false), 5000);
+
+                        const testHandler = () => {
+                            clearTimeout(timeout);
+                            document.removeEventListener(
+                                "touchstart",
+                                testHandler,
+                            );
+                            resolve(true);
+                        };
+
+                        document.addEventListener("touchstart", testHandler);
+                    });
+                }
+
+                getSupportInfo() {
+                    return {
+                        touchSupported: this.isSupported(),
+                        maxTouchPoints: navigator.maxTouchPoints || 0,
+                    };
+                }
+            }
+
+            // Создаем экземпляры сенсоров
+            const motionSensor = new MotionSensor();
+            const orientationSensor = new OrientationSensor();
+            const touchSensor = new TouchSensor();
+
+            // Функции для тестирования
+            async function testMotionSensor() {
+                const btn = document.getElementById("testMotion");
+                btn.disabled = true;
+                btn.textContent = "Тестирование...";
+
+                const result = await motionSensor.test();
+
+                btn.disabled = false;
+                btn.textContent = result ? "✓ Работает" : "✗ Не работает";
+                btn.className = result ? "working" : "not-working";
+            }
+
+            async function testOrientationSensor() {
+                const btn = document.getElementById("testOrientation");
+                btn.disabled = true;
+                btn.textContent = "Тестирование...";
+
+                const result = await orientationSensor.test();
+
+                btn.disabled = false;
+                btn.textContent = result ? "✓ Работает" : "✗ Не работает";
+                btn.className = result ? "working" : "not-working";
+            }
+
+            async function testTouchSensor() {
+                const btn = document.getElementById("testTouch");
+                btn.disabled = true;
+                btn.textContent = "Тестирование...";
+
+                const result = await touchSensor.test();
+
+                btn.disabled = false;
+                btn.textContent = result ? "✓ Работает" : "✗ Не работает";
+                btn.className = result ? "working" : "not-working";
+            }
+
+            // Инициализация
+            function init() {
+                // Motion Sensor
+                const motionStatus = document.getElementById("motionStatus");
+                const motionData = document.getElementById("motionData");
+
+                if (motionSensor.isSupported()) {
+                    motionStatus.textContent = "Поддерживается";
+                    motionStatus.className = "status working";
+
+                    motionSensor.subscribe((data) => {
+                        if (data.isValid) {
+                            motionData.innerHTML = `
+                            <div class="data-row">Acceleration: X=${data.acceleration.x}, Y=${data.acceleration.y}, Z=${data.acceleration.z}</div>
+                            <div class="data-row">Rotation: α=${data.rotation.alpha}, β=${data.rotation.beta}, γ=${data.rotation.gamma}</div>
+                            <div class="data-row">Motion: ${data.motionDetected ? "ДА" : "НЕТ"}</div>
+                        `;
+                        }
+                    });
+                } else {
+                    motionStatus.textContent = "Не поддерживается";
+                    motionStatus.className = "status not-working";
+                }
+
+                // Orientation Sensor
+                const orientationStatus =
+                    document.getElementById("orientationStatus");
+                const orientationData =
+                    document.getElementById("orientationData");
+
+                if (orientationSensor.isSupported()) {
+                    orientationStatus.textContent = "Поддерживается";
+                    orientationStatus.className = "status working";
+
+                    orientationSensor.subscribe((data) => {
+                        if (data.isValid) {
+                            orientationData.innerHTML = `
+                            <div class="data-row">Alpha (Z): ${data.alpha}°</div>
+                            <div class="data-row">Beta (X): ${data.beta}°</div>
+                            <div class="data-row">Gamma (Y): ${data.gamma}°</div>
+                        `;
+                        }
+                    });
+                } else {
+                    orientationStatus.textContent = "Не поддерживается";
+                    orientationStatus.className = "status not-working";
+                }
+
+                // Touch Sensor
+                const touchStatus = document.getElementById("touchStatus");
+                const touchData = document.getElementById("touchData");
+
+                if (touchSensor.isSupported()) {
+                    const info = touchSensor.getSupportInfo();
+                    touchStatus.textContent = `Поддерживается (${info.maxTouchPoints} точек)`;
+                    touchStatus.className = "status working";
+
+                    touchSensor.subscribe((data) => {
+                        if (data.isValid) {
+                            touchData.innerHTML = `
+                            <div class="data-row">Касания: ${data.touchCount}</div>
+                            <div class="data-row">Мульти-тач: ${data.multiTouchDetected ? "ДА" : "НЕТ"}</div>
+                            <div class="data-row">Жест: ${data.gestureType}</div>
+                        `;
+                        }
+                    });
+                } else {
+                    touchStatus.textContent = "Не поддерживается";
+                    touchStatus.className = "status not-working";
+                }
+            }
+
+            // Запуск инициализации после загрузки страницы
+            document.addEventListener("DOMContentLoaded", init);
+        </script>
+    </body>
 </html>
