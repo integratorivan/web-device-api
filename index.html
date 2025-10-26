@@ -42,6 +42,15 @@
         <h1>🔬 Sensor Test</h1>
         <p>Тест датчиков устройства</p>
 
+        <div class="sensor-box">
+            <div class="sensor-title">Разрешения</div>
+            <p>Для iOS устройств требуется запросить разрешения для доступа к датчикам движения и ориентации.</p>
+            <button id="requestPermissions" onclick="requestAllPermissions()">
+                Запросить разрешения
+            </button>
+            <div id="permissionStatus" class="status"></div>
+        </div>
+
         <div id="motionSensor" class="sensor-box">
             <div class="sensor-title">Motion Sensor (Акселерометр)</div>
             <div class="status" id="motionStatus">Проверка поддержки...</div>
@@ -355,17 +364,88 @@
                 }
             }
 
+            // Функция для запроса разрешений
+            async function requestPermissions() {
+                const results = {
+                    motion: false,
+                    orientation: false
+                };
+
+                // Запрос разрешения для DeviceMotionEvent
+                if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+                    try {
+                        const permission = await DeviceMotionEvent.requestPermission();
+                        results.motion = permission === 'granted';
+                    } catch (error) {
+                        console.log('DeviceMotionEvent permission error:', error);
+                        results.motion = false;
+                    }
+                } else {
+                    // Для браузеров, где разрешение не требуется
+                    results.motion = true;
+                }
+
+                // Запрос разрешения для DeviceOrientationEvent
+                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    try {
+                        const permission = await DeviceOrientationEvent.requestPermission();
+                        results.orientation = permission === 'granted';
+                    } catch (error) {
+                        console.log('DeviceOrientationEvent permission error:', error);
+                        results.orientation = false;
+                    }
+                } else {
+                    // Для браузеров, где разрешение не требуется
+                    results.orientation = true;
+                }
+
+                return results;
+            }
+
             // Создаем экземпляры сенсоров
             const motionSensor = new MotionSensor();
             const orientationSensor = new OrientationSensor();
             const touchSensor = new TouchSensor();
 
             // Функции для тестирования
+            // Функция для запроса всех разрешений через кнопку
+            async function requestAllPermissions() {
+                const btn = document.getElementById("requestPermissions");
+                const status = document.getElementById("permissionStatus");
+                
+                btn.disabled = true;
+                btn.textContent = "Запрашиваем разрешения...";
+                status.textContent = "Обработка запроса...";
+                status.className = "status";
+
+                const permissions = await requestPermissions();
+                
+                btn.disabled = false;
+                btn.textContent = "Запросить разрешения";
+                
+                const motionText = permissions.motion ? "✓ Motion" : "✗ Motion";
+                const orientationText = permissions.orientation ? "✓ Orientation" : "✗ Orientation";
+                
+                status.innerHTML = `${motionText}, ${orientationText}`;
+                status.className = `status ${(permissions.motion && permissions.orientation) ? "working" : "not-working"}`;
+            }
+
             async function testMotionSensor() {
                 const btn = document.getElementById("testMotion");
                 btn.disabled = true;
-                btn.textContent = "Тестирование...";
+                btn.textContent = "Запрос разрешений...";
 
+                // Сначала запрашиваем разрешения
+                const permissions = await requestPermissions();
+                
+                if (!permissions.motion) {
+                    btn.disabled = false;
+                    btn.textContent = "✗ Разрешение отклонено";
+                    btn.className = "not-working";
+                    return;
+                }
+
+                btn.textContent = "Тестирование...";
                 const result = await motionSensor.test();
 
                 btn.disabled = false;
@@ -376,8 +456,19 @@
             async function testOrientationSensor() {
                 const btn = document.getElementById("testOrientation");
                 btn.disabled = true;
-                btn.textContent = "Тестирование...";
+                btn.textContent = "Запрос разрешений...";
 
+                // Сначала запрашиваем разрешения
+                const permissions = await requestPermissions();
+                
+                if (!permissions.orientation) {
+                    btn.disabled = false;
+                    btn.textContent = "✗ Разрешение отклонено";
+                    btn.className = "not-working";
+                    return;
+                }
+
+                btn.textContent = "Тестирование...";
                 const result = await orientationSensor.test();
 
                 btn.disabled = false;
