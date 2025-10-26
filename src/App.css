@@ -1,0 +1,231 @@
+.app-shell {
+  width: min(1200px, 100%);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 3vw, 3rem);
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.hero {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hero__eyebrow {
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  color: #7282ff;
+  font-weight: 600;
+}
+
+.hero__lead {
+  max-width: 60ch;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.sensor-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.sensor-card {
+  background: rgba(32, 35, 41, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+}
+
+.sensor-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.sensor-card__description {
+  margin-top: 0.35rem;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.sensor-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: flex-end;
+}
+
+.sensor-card__badge {
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sensor-card__badge--ok {
+  color: #8ff6c2;
+  background: rgba(143, 246, 194, 0.15);
+}
+
+.sensor-card__badge--warn {
+  color: #ffb347;
+  background: rgba(255, 179, 71, 0.15);
+}
+
+.sensor-card__test-btn {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: inherit;
+  padding: 0.35rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease;
+}
+
+.sensor-card__test-btn:hover:enabled {
+  border-color: #7282ff;
+  color: #aab4ff;
+}
+
+.sensor-card__test-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.sensor-card__status {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.sensor-card__status--pass {
+  color: #8ff6c2;
+}
+
+.sensor-card__status--fail {
+  color: #ff7b7b;
+}
+
+.sensor-card__body {
+  min-height: 120px;
+}
+
+.sensor-card__fallback {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.sensor-card__footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 1rem;
+}
+
+.sensor-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sensor-grid__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.sensor-grid__label {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.sensor-grid__values {
+  display: flex;
+  gap: 0.75rem;
+  font-family: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+}
+
+.sensor-grid__number {
+  font-family: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.1rem;
+}
+
+.badge {
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.8rem;
+  text-transform: capitalize;
+}
+
+.badge--ok {
+  background: rgba(143, 246, 194, 0.18);
+  color: #8ff6c2;
+}
+
+.touch-list {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.touch-list__item {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 0.75rem;
+}
+
+.touch-list__title {
+  margin: 0 0 0.35rem;
+  font-weight: 600;
+}
+
+.touch-list__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.support-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.support-grid dt {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.support-grid dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .sensor-card__header {
+    flex-direction: column;
+  }
+
+  .sensor-card__actions {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
