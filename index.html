@@ -150,8 +150,6 @@
                 }
 
                 async test() {
-                    if (!this.isSupported()) return false;
-
                     return new Promise((resolve) => {
                         const timeout = setTimeout(() => resolve(false), 3000);
 
@@ -414,19 +412,8 @@
             async function testMotionSensor() {
                 const btn = document.getElementById("testMotion");
                 btn.disabled = true;
-                btn.textContent = "Запрос разрешений...";
-
-                // Сначала запрашиваем разрешения
-                const permissions = await requestPermissions();
-                
-                if (!permissions.motion) {
-                    btn.disabled = false;
-                    btn.textContent = "✗ Разрешение отклонено";
-                    btn.className = "not-working";
-                    return;
-                }
-
                 btn.textContent = "Тестирование...";
+
                 const result = await motionSensor.test();
 
                 btn.disabled = false;
@@ -437,19 +424,8 @@
             async function testOrientationSensor() {
                 const btn = document.getElementById("testOrientation");
                 btn.disabled = true;
-                btn.textContent = "Запрос разрешений...";
-
-                // Сначала запрашиваем разрешения
-                const permissions = await requestPermissions();
-                
-                if (!permissions.orientation) {
-                    btn.disabled = false;
-                    btn.textContent = "✗ Разрешение отклонено";
-                    btn.className = "not-working";
-                    return;
-                }
-
                 btn.textContent = "Тестирование...";
+
                 const result = await orientationSensor.test();
 
                 btn.disabled = false;
