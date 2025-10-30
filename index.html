@@ -41,16 +41,6 @@
     <body>
         <h1>🔬 Sensor Test</h1>
         <p>Тест датчиков устройства</p>
-
-        <div class="sensor-box">
-            <div class="sensor-title">Разрешения</div>
-            <p>Для iOS устройств требуется запросить разрешения для доступа к датчикам движения и ориентации.</p>
-            <button id="requestPermissions" onclick="requestAllPermissions()">
-                Запросить разрешения
-            </button>
-            <div id="permissionStatus" class="status"></div>
-        </div>
-
         <div id="motionSensor" class="sensor-box">
             <div class="sensor-title">Motion Sensor (Акселерометр)</div>
             <div class="status" id="motionStatus">Проверка поддержки...</div>
